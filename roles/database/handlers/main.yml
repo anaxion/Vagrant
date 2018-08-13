@@ -1,0 +1,10 @@
+---
+- name: Restart httpd
+  service:
+    name: httpd
+    state: restarted
+
+- name: Restart psql
+  service:
+    name: postgresql-9.6
+    state: restarted

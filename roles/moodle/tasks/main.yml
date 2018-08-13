@@ -1,0 +1,36 @@
+---
+- name: Install wget
+  yum: 
+    name: wget
+    state: installed
+
+- name: Download and extract moodle
+  command: "{{ item }}"
+  with_items:
+  - wget https://download.moodle.org/download.php/direct/stable35/moodle-latest-35.tgz
+  - sudo tar -zxvf moodle-latest-35.tgz -C /var/www/html
+
+- file:
+    path: /var/moodledata
+    state: directory
+    owner: apache
+    group: apache
+    setype: httpd_sys_rw_content_t
+    
+- name: allow httpd connect to network
+  seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes
+  
+  notify: Restart httpd
+
+- name: Install moodle
+  command: /usr/bin/php /var/www/html/moodle/admin/cli/install.php --wwwroot=http://192.168.56.201/moodle --dataroot=/var/moodledata --dbtype=pgsql --dbhost=192.168.56.202 --dbname=moodle --dbuser=moodleuser --dbpass=1QazWsx --fullname="Moodle test" --adminpass=1QazWsx  --shortname="test" --non-interactive --agree-license
+
+- name: config file 
+  file: 
+    path: /var/www/html/moodle/config.php
+    mode: "a+r"
+ 
+  notify: Restart httpd

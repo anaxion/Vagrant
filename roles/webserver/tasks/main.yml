@@ -1,0 +1,51 @@
+---
+- name: Install httpd
+  yum:
+    name: httpd
+    state: installed
+
+- name: Start and Enable service
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: Install remirepo
+  yum:
+    name: http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+    state: installed
+
+- name: Install epal and yum util
+  yum:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - epel-release
+    - yum-utils
+
+- name: Enabled repo
+  command: yum-config-manager --enable remi-php72
+
+- name: Install php
+  yum:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - php
+    - php-zip
+    - php-gd
+    - php-intl
+    - php-mbstring
+    - php-soap
+    - php-xmlrpc
+    - php-opcache
+    - php-iconv
+    - php-curl
+    - php-ctype
+    - php-simplexml
+    - php-spl
+    - php-pgsql
+    - libsemanage-python
+    - libselinux-python
+
+  notify: Restart httpd

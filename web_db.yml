@@ -1,0 +1,21 @@
+---
+- name: config webserver
+  hosts: webserver
+  sudo: yes
+   
+  roles:
+   - webserver
+
+- name: config db
+  hosts: database
+  sudo: yes
+  
+  roles:
+   - database
+   
+- name: install moodle
+  hosts: webserver
+  sudo: yes
+  
+  roles:
+   - moodle

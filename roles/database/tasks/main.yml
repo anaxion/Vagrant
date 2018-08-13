@@ -1,0 +1,62 @@
+---
+- name: Install repo
+  yum:
+    name: https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat96-9.6-3.noarch.rpm
+    state: installed
+
+- name: install psql
+  yum:
+    name: postgresql96-server
+    state: installed
+
+- name: init db
+  command: /usr/pgsql-9.6/bin/postgresql96-setup initdb
+
+- name: enable and start service
+  service:
+    name: postgresql-9.6
+    enabled: yes
+    state: started
+
+- name: Install module
+  yum:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - python-psycopg2
+    - libselinux-python
+    - libselinux-python
+    - libsemanage-python
+
+- name: Configure db server
+  lineinfile:
+    path: /var/lib/pgsql/9.6/data/pg_hba.conf
+    line: "host all all 192.168.56.0/24 md5"
+   
+- name: Configure connect db server
+  lineinfile:
+    path: /var/lib/pgsql/9.6/data/postgresql.conf
+    line: "listen_addresses = '*'"
+
+- name: create db in db server
+  become: yes
+  become_user: postgres
+  postgresql_db:
+    name: moodle
+    encoding: UTF-8
+
+- name: create user in db server
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    db: moodle
+    name: moodleuser
+    password: 1QazWsx
+  
+  notify: Restart psql
+
+- name: allow httpd connect to db
+  seboolean:
+    name: httpd_can_network_connect_db
+    state: yes
+    persistent: yes
